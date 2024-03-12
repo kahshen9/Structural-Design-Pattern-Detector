@@ -1,0 +1,79 @@
+/*
+   CSS styling examples for the Vaadin app.
+
+   Visit https://vaadin.com/docs/styling/application-theme/ for more information.
+*/
+
+/* Example: CSS class name to center align the content . */
+.centered-content {
+  margin: 0 auto;
+  max-width: 250px;
+}
+
+body {
+  background-color: #FDF8F0;
+}
+
+h1 {
+  background-color: #6A8D6D;
+  color: #FDF8F0;
+  font-family: "Bookman Old Style";
+  padding: 16px;
+}
+
+vaadin-button {
+  --vaadin-button-text-color: #FDF8F0;
+  font-size: larger;
+  font-family: "Bookman Old Style";
+  background-color: #beceb0;
+}
+
+
+/* Upload styling */
+.Upload-bar {
+  padding: 50px;
+}
+
+vaadin-upload > [slot="drop-label"], vaadin-upload > [slot="drop-label-icon"], vaadin-upload-file::part(name) {
+  font-family: "Bookman Old Style";
+  color: #86A489;
+  padding: 3px;
+}
+
+vaadin-upload > vaadin-button[disabled] {
+  background-color: #FDF8F0;
+  color: #86A489;
+  font-weight: lighter;
+}
+
+vaadin-upload::part(primary-buttons) {
+  min-height: 400px;
+  min-width: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+vaadin-upload::part(drop-label) {
+  margin: 3%;
+}
+
+/* Notification styling */
+.text {
+  color: #FDF8F0;
+  font-family: "Bookman Old Style";
+}
+
+vaadin-button > vaadin-icon {
+  color: #FDF8F0;
+}
+
+.closeNotification {
+  background-color: initial;
+}
+
+/* Dialog styling */
+vaadin-dialog-overlay > [slot="title"] {
+  color: #6A8D6D;
+}
