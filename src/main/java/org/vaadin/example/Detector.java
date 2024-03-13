@@ -205,7 +205,7 @@ public class Detector
 			streams2.add(new FileInputStream(javaFile));
 			streams3.add(new FileInputStream(javaFile));
 			int[] vector = javaHandler.readJava(streams1, streams2, streams3);
-			codeVectors.put(javaFile.getName(), vector);
+			codeVectors.put(javaName, vector);
 		}
 		
 		// CD handling
@@ -232,7 +232,7 @@ public class Detector
 		{
 			InputStream CDInputStream = new FileInputStream(CDFile);
         	int[] vector = CDHandler.readCD(CDInputStream);
-        	designPatternVectors.put(CDFile.getName(), vector);
+        	designPatternVectors.put(CDName, vector);
 		}
 		
 		/* Display */
