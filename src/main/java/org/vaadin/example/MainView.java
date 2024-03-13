@@ -237,15 +237,20 @@ public class MainView extends VerticalLayout
 
             // Cancel button
             Button cancelButton = new Button("Cancel", e -> {
-                if (cdFile != null || javaFile != null)
+                if (cdFile != null) {
                     try {
                         cdFile.delete(); // Delete file in buffer
                         cdFile = null;
                         uploadCD.getElement().setPropertyJson("files", Json.createArray()); // Clear front-end file lists
-                        javaFile.delete();
-                        uploadJava.getElement().setPropertyJson("files", Json.createArray());
-                        javaFile = null;
-                    } catch (Exception ignore) { }
+                    } catch (Exception ignore) {
+                    }
+                }
+
+                if (javaFile != null) {
+                    javaFile.delete();
+                    javaFile = null;
+                    uploadJava.getElement().setPropertyJson("files", Json.createArray());
+                }
             });
 
             add(detectButton, cancelButton);
