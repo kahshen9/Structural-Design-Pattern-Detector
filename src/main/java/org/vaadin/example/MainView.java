@@ -21,7 +21,6 @@ import elemental.json.Json;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.util.concurrent.atomic.AtomicReference;
 
 
 /**
@@ -72,7 +71,6 @@ public class MainView extends VerticalLayout
             addClassName("Upload-bar");
 
             // CD upload
-            VerticalLayout buttonAndLabelLayout = new VerticalLayout();
             CDBuffer = new FileBuffer();
             uploadCD = new Upload(CDBuffer);
             uploadCD.setUploadButton(new Button("Upload Class Diagrams"));
@@ -183,7 +181,6 @@ public class MainView extends VerticalLayout
             emptyFileNotification.setPosition(Notification.Position.TOP_CENTER);
 
             // Detection result dialog
-            AtomicReference<Anchor> downloadLinkRef = new AtomicReference<>();
             Dialog detectionDialog = new Dialog();
             detectionDialog.setHeaderTitle("Detection Result");
 
@@ -240,7 +237,7 @@ public class MainView extends VerticalLayout
 
             // Cancel button
             Button cancelButton = new Button("Cancel", e -> {
-                if (cdFile != null && javaFile != null)
+                if (cdFile != null || javaFile != null)
                     try {
                         cdFile.delete(); // Delete file in buffer
                         cdFile = null;
