@@ -31,7 +31,8 @@ vaadin-button {
 
 /* Upload styling */
 .Upload-bar {
-  padding: 50px;
+  padding-top: 50px;
+  padding-bottom: 20px;
 }
 
 vaadin-upload > [slot="drop-label"], vaadin-upload > [slot="drop-label-icon"], vaadin-upload-file::part(name) {
@@ -47,8 +48,8 @@ vaadin-upload > vaadin-button[disabled] {
 }
 
 vaadin-upload::part(primary-buttons) {
-  min-height: 400px;
-  min-width: 400px;
+  min-height: 300px;
+  min-width: 300px;
   display: flex;
   flex-direction: column;
   justify-content: center;

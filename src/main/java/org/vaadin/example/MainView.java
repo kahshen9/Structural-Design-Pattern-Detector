@@ -195,6 +195,9 @@ public class MainView extends VerticalLayout
                     .set("text-overflow", "ellipsis");
             detectionDialog.add(span);
 
+            Button downloadButton = new Button("Download");
+            Anchor downloadLink = new Anchor();
+
             Button doneButton = new Button("Done", e -> detectionDialog.close());
             detectionDialog.getFooter().add(doneButton);
 
@@ -208,14 +211,19 @@ public class MainView extends VerticalLayout
                     try {
                         detectionResult = detector.detectMostSimilarCode (cdFile, cdFileName, javaFile, javaFileName);
 
+                        // Remove previous download link if exists
+                        detectionDialog.getFooter().remove(downloadLink);
+
                         // Add download result button in dialog
                         StreamResource detectionResource = new StreamResource("Pattern_Detection_Result.txt",
                                 () -> new ByteArrayInputStream(detectionResult.getBytes()));
-                        Anchor downloadLink = new Anchor(detectionResource, "");
+                        downloadLink.setHref(detectionResource);
+
+                        // Update the anchor and add it to the dialog footer
+                        downloadLink.setHref(detectionResource);
                         downloadLink.getElement().setAttribute("download", true);
-                        Button downloadButton = new Button("Download");
-                        downloadLink.add(downloadButton);
-                        detectionDialog.getFooter().add(downloadLink); // Add the new download link
+                        downloadLink.getElement().appendChild(downloadButton.getElement());
+                        detectionDialog.getFooter().add(downloadLink);
 
                         // Display result in dialog
                         span.setText(detectionResult); // Update the span with the result
