@@ -39,7 +39,7 @@ public class JavaCodeHandling
 	/*
 	 * Identify classes in java file
 	 * */
-	public void identifyClasses(InputStream inputStream) throws FileNotFoundException 
+	public void identifyClasses(InputStream inputStream)
 	{
 		Scanner scan = new Scanner(inputStream);
         while (scan.hasNext()) 
@@ -73,7 +73,7 @@ public class JavaCodeHandling
 	 * 
 	 * Assume "public class IPhone4sCharger implements Charger, IPhone" in 1 line.
 	 * */
-	public void identifyGeneralization(ArrayList<String> classesAndInterfaces, InputStream inputStream) throws FileNotFoundException 
+	public void identifyGeneralization(ArrayList<String> classesAndInterfaces, InputStream inputStream)
 	{
 		System.out.println("Generalization");
 		Scanner scan = new Scanner(inputStream);
@@ -333,7 +333,6 @@ public class JavaCodeHandling
 			    	}
 			    }
 			}
-			scan.close();
 		}
         System.out.println("\n\n");
 	}
@@ -521,13 +520,12 @@ public class JavaCodeHandling
 	public int[] readJava(ArrayList<InputStream> streams1, ArrayList<InputStream> streams2, ArrayList<InputStream> streams3) throws Exception
 	{
 		JavaCodeHandling handler = new JavaCodeHandling();
-		int[] vector = null;
+		int[] vector;
 		
 		if (streams1 != null && streams2 != null && streams3 != null)
 		{
 			if (streams1.size() > 1)
 			{
-				System.out.println("Identify");
 				// Identify class & interface
 				for (InputStream stream : streams1) // 1 stream == 1 file
 					handler.identifyClasses(stream);

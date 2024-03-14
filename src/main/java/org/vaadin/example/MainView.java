@@ -118,6 +118,7 @@ public class MainView extends VerticalLayout
             uploadJava.addSucceededListener(event -> {
                 // Get information about the uploaded file
                 javaFileName = event.getFileName();
+                System.out.println(javaFileName);
                 FileData fileData = JavaBuffer.getFileData();
                 javaFile = fileData.getFile();
             });

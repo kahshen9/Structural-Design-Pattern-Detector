@@ -108,7 +108,7 @@ public class Detector
 //		return "Most similar pattern: "+mostSimilarPattern+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset;
 //	}
 	
-	public Map<String, ArrayList<InputStream>> unzipFile(File file, String extension) throws ZipException, IOException
+	public Map<String, ArrayList<InputStream>> unzipFile(File file, String fileName, String extension) throws ZipException, IOException
 	{
 		Map<String, ArrayList<InputStream>> zip = new HashMap<String, ArrayList<InputStream>>();
 
@@ -121,38 +121,44 @@ public class Detector
 		        
 		        if (!entry.isDirectory()) // Entry is a file > check extension
 		        {
-		        	try (InputStream inputStream = zipFile.getInputStream(entry);)  // automatically close resource declared within try-with-resource block
+		        	try (InputStream inputStream = zipFile.getInputStream(entry))  // automatically close resource declared within try-with-resource block
 		        	{
 		        		 // Extract the file name and directory from the zip entry
 		                String entryName = entry.getName();
 		                if (entryName.endsWith(extension))
 		                {
 			        		String[] parts = entryName.split("/");
-			                if (parts.length > 1) 
+							String key;
+			                if (parts.length > 1) 	// Folders in zip
 			                {
-			                	String name;
 			                	if (extension.equals(".uxf")) 		// class diagram --> file name
-			                		name = parts[parts.length-1];
+									key = parts[parts.length-1];
 			                	else								// java program --> folder name
-			                		name = parts[parts.length-2];
-			                    
-			                	// Read contents of the input stream into a byte array
-			                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			                    byte[] buffer = new byte[1024];
-			                    int len;
-			                    while ((len = inputStream.read(buffer)) > -1) {
-			                        baos.write(buffer, 0, len);
-			                    }
-			                    baos.flush();
-
-			                    // Create a ByteArrayInputStream from the byte array
-			                    ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(baos.toByteArray());
-
-			                    // If folder name is not present, create a new list
-			                    zip.putIfAbsent(name, new ArrayList<>());
-			                    // Map file to its folder
-			                    zip.get(name).add(byteArrayInputStream);
+									key = parts[parts.length-2];
 			                }
+							else { 		// Files in zip
+								if (extension.equals(".uxf")) 		// class diagram --> file name
+									key = entryName;
+								else								// java program --> folder name
+									key = fileName;
+							}
+
+							// Read contents of the input stream into a byte array
+							ByteArrayOutputStream baos = new ByteArrayOutputStream();
+							byte[] buffer = new byte[1024];
+							int len;
+							while ((len = inputStream.read(buffer)) > -1) {
+								baos.write(buffer, 0, len);
+							}
+							baos.flush();
+
+							// Create a ByteArrayInputStream from the byte array
+							ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(baos.toByteArray());
+
+							// If folder name is not present, create a new list
+							zip.putIfAbsent(key, new ArrayList<>());
+							// Map file to its folder
+							zip.get(key).add(byteArrayInputStream);
 		                }
 		        	}
 		            
@@ -177,12 +183,12 @@ public class Detector
 		
 		if (javaName.endsWith(".zip")) // zip file
 		{
-			Map<String, ArrayList<InputStream>> javaZip1 = new HashMap<String, ArrayList<InputStream>>();
-			Map<String, ArrayList<InputStream>> javaZip2 = new HashMap<String, ArrayList<InputStream>>();
-			Map<String, ArrayList<InputStream>> javaZip3 = new HashMap<String, ArrayList<InputStream>>();
-			javaZip1 = unzipFile(javaFile, ".java");
-			javaZip2 = unzipFile(javaFile, ".java");
-			javaZip3 = unzipFile(javaFile, ".java");
+			Map<String, ArrayList<InputStream>> javaZip1;
+			Map<String, ArrayList<InputStream>> javaZip2;
+			Map<String, ArrayList<InputStream>> javaZip3;
+			javaZip1 = unzipFile(javaFile, javaName, ".java");
+			javaZip2 = unzipFile(javaFile, javaName, ".java");
+			javaZip3 = unzipFile(javaFile, javaName, ".java");
 			
 			// Process javaZip map -- 1 entry == 1 folder == 1 program
 			for (Map.Entry<String, ArrayList<InputStream>> entry : javaZip1.entrySet())
@@ -214,8 +220,8 @@ public class Detector
 		
 		if (CDName.endsWith(".zip")) // zip file
 		{
-			Map<String, ArrayList<InputStream>> CDZip = new HashMap<String, ArrayList<InputStream>>();
-			CDZip = unzipFile(CDFile, ".uxf");
+			Map<String, ArrayList<InputStream>> CDZip;
+			CDZip = unzipFile(CDFile, CDName, ".uxf");
 			
 			// Process CDZip map -- 1 entry == 1 uxf == 1 pattern
 			for (Map.Entry<String, ArrayList<InputStream>> entry : CDZip.entrySet()) 
