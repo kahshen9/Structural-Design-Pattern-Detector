@@ -431,11 +431,14 @@ public class JavaCodeHandling
 
             for (Integer[] coordinate : values)
             {
-            	String startClassName = classesAndInterfaces.get(coordinate[0]);
-            	String endClassName = classesAndInterfaces.get(coordinate[1]);
-            	
-            	namedMappedRelation.putIfAbsent(key, new ArrayList<>());
-            	namedMappedRelation.get(key).add(new String[] {startClassName, endClassName});
+				if (coordinate[0] != -1 && coordinate[1] != -1)
+				{
+					String startClassName = classesAndInterfaces.get(coordinate[0]);
+					String endClassName = classesAndInterfaces.get(coordinate[1]);
+
+					namedMappedRelation.putIfAbsent(key, new ArrayList<>());
+					namedMappedRelation.get(key).add(new String[]{startClassName, endClassName});
+				}
             }
         }
 	}
@@ -464,8 +467,11 @@ public class JavaCodeHandling
             // Starting class = row
             for (Integer[] value : values) // mapped relation
             {
-            	int row = value[0], column = value[1];
-            	relationMatrix[row][column] = 1;
+				if (value[0] != -1 && value[1] != -1)
+				{
+					int row = value[0], column = value[1];
+					relationMatrix[row][column] = 1;
+				}
             }
 
             // Add to relationMatrix map; (Key = relation label, value = relation matrix)
