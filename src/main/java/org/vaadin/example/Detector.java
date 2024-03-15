@@ -199,7 +199,8 @@ public class Detector
 	            ArrayList<InputStream> streams3 = javaZip3.get(key);
 	            int[] vector = javaHandler.readJava(streams1, streams2, streams3);
 	            System.out.println("Java vector: "+ Arrays.toString(vector));
-	            codeVectors.put(key, vector);
+				if (vector.length != 0)
+	            	codeVectors.put(key, vector);
 	        }
 		}
 		else if (javaName.endsWith(".java")) // single java file
@@ -211,7 +212,8 @@ public class Detector
 			streams2.add(new FileInputStream(javaFile));
 			streams3.add(new FileInputStream(javaFile));
 			int[] vector = javaHandler.readJava(streams1, streams2, streams3);
-			codeVectors.put(javaName, vector);
+			if (vector.length != 0)
+				codeVectors.put(javaName, vector);
 		}
 		
 		// CD handling
@@ -231,14 +233,16 @@ public class Detector
 	            for (InputStream stream : streams)
 	            {
 	            	int[] vector = CDHandler.readCD(stream);
-	            	designPatternVectors.put(key, vector);
+					if (vector.length != 0)
+	            		designPatternVectors.put(key, vector);
 	            }
 	        }
 		}else if (CDName.endsWith(".uxf")) // single CD file
 		{
 			InputStream CDInputStream = new FileInputStream(CDFile);
         	int[] vector = CDHandler.readCD(CDInputStream);
-        	designPatternVectors.put(CDName, vector);
+			if (vector.length != 0)
+        		designPatternVectors.put(CDName, vector);
 		}
 		
 		/* Display */
@@ -264,10 +268,10 @@ public class Detector
 		
 		/* Detection */ 
 		// Similarity score for each offset
-		Map <String, String> output = null;
-		if (designPatternVectors != null && codeVectors != null)
+		Map <String, String> output = new HashMap<String, String>();
+		if (!designPatternVectors.isEmpty() && !codeVectors.isEmpty())
 		{
-			output = new HashMap<String, String>();
+			System.out.println("Both vectors not empty.");
 			for (Map.Entry<String, int[]> patternEntry : designPatternVectors.entrySet())
 			{
 				double maxSimilarScore = 0.0;
@@ -308,8 +312,10 @@ public class Detector
 				}
 				output.put(patternKey, outputText);
 			}
-		} else
-			System.out.println("Pattern / code vector is null.");
+		} else if (designPatternVectors.isEmpty())
+			output.put(CDName, "No class found in class diagram.");
+		else if (codeVectors.isEmpty())
+			output.put(javaName, "No class found in java program.");
 
 		String stringOutput = "";
 		if (!output.isEmpty())
