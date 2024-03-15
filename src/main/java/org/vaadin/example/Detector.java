@@ -272,7 +272,7 @@ public class Detector
 			{
 				double maxSimilarScore = 0.0;
 				int mostSimilarOffset = 0;
-				String mostSimilarCode = "";
+				String mostSimilarCode = "", outputText = "";
 				
 				String patternKey = patternEntry.getKey();
 				int[] designPatternVector = patternEntry.getValue();
@@ -286,7 +286,7 @@ public class Detector
 					System.out.println("Code Vector: "+codeKey+": "+ Arrays.toString(codeVector));
 					ArrayList<Double> similarityScores = computeSimilarityScore(designPatternVector, codeVector);
 					if (similarityScores == null)
-						System.out.println("Code graph smaller than design pattern graph.");
+						outputText = "Code: "+codeKey+"\nCode graph smaller than design pattern graph.";
 					else 
 					{
 						System.out.println("Similarity score for offset (0 - " + offset + "):");
@@ -302,10 +302,11 @@ public class Detector
 							maxSimilarScore = Collections.max(similarityScores);
 							mostSimilarOffset = similarityScores.indexOf(Collections.max(similarityScores));
 							mostSimilarCode = codeKey;
+							outputText = "Most similar code: "+mostSimilarCode+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset;
 						}
 					}
 				}
-				output.put(patternKey, "Most similar code: "+mostSimilarCode+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset);
+				output.put(patternKey, outputText);
 			}
 		} else
 			System.out.println("Pattern / code vector is null.");
