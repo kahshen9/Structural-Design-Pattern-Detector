@@ -34,7 +34,7 @@ public class Detector
 				{
 					sumProduct = sumProduct + (designPatternVector[i] * codeVector[i+j]);
 					designPatternMagnitude = designPatternMagnitude + (designPatternVector[i] * designPatternVector[i]);
-					codeMagnitude = codeMagnitude + (codeVector[i] * codeVector[i]);
+					codeMagnitude = codeMagnitude + (codeVector[i+j] * codeVector[i+j]);
 				}
 				designPatternMagnitude = Math.sqrt(designPatternMagnitude);
 				codeMagnitude = Math.sqrt(codeMagnitude);
@@ -271,7 +271,6 @@ public class Detector
 		Map <String, String> output = new HashMap<String, String>();
 		if (!designPatternVectors.isEmpty() && !codeVectors.isEmpty())
 		{
-			System.out.println("Both vectors not empty.");
 			for (Map.Entry<String, int[]> patternEntry : designPatternVectors.entrySet())
 			{
 				double maxSimilarScore = 0.0;
