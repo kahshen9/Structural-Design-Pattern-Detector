@@ -108,7 +108,7 @@ public class Detector
 //		return "Most similar pattern: "+mostSimilarPattern+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset;
 //	}
 	
-	public Map<String, ArrayList<InputStream>> unzipFile(File file, String fileName, String extension) throws ZipException, IOException
+	public Map<String, ArrayList<InputStream>> unzipFile(File file, String fileName, String extension) throws IOException
 	{
 		Map<String, ArrayList<InputStream>> zip = new HashMap<String, ArrayList<InputStream>>();
 
@@ -217,9 +217,10 @@ public class Detector
 		}
 		
 		// CD handling
-		InputHandling CDHandler = new InputHandling();
+		InputHandling CDHandler;
 		Map<String, int[]> designPatternVectors = new HashMap<String, int[]>();
-		
+		Map<String, String> errorMessage = new HashMap<>();
+
 		if (CDName.endsWith(".zip")) // zip file
 		{
 			Map<String, ArrayList<InputStream>> CDZip;
@@ -232,15 +233,21 @@ public class Detector
 	            ArrayList<InputStream> streams = entry.getValue();
 	            for (InputStream stream : streams)
 	            {
-	            	int[] vector = CDHandler.readCD(stream);
+					CDHandler = new InputHandling();
+	            	int[] vector = CDHandler.readCD(stream, CDHandler);
+					if (!CDHandler.getErrorMessage().isEmpty())
+						errorMessage.put(key, CDHandler.getErrorMessage());
 					if (vector.length != 0)
 	            		designPatternVectors.put(key, vector);
 	            }
 	        }
 		}else if (CDName.endsWith(".uxf")) // single CD file
 		{
+			CDHandler = new InputHandling();
 			InputStream CDInputStream = new FileInputStream(CDFile);
-        	int[] vector = CDHandler.readCD(CDInputStream);
+        	int[] vector = CDHandler.readCD(CDInputStream, CDHandler);
+			if (!CDHandler.getErrorMessage().isEmpty())
+				errorMessage.put(CDName, CDHandler.getErrorMessage());
 			if (vector.length != 0)
         		designPatternVectors.put(CDName, vector);
 		}
@@ -269,7 +276,9 @@ public class Detector
 		/* Detection */ 
 		// Similarity score for each offset
 		Map <String, String> output = new HashMap<String, String>();
-		if (!designPatternVectors.isEmpty() && !codeVectors.isEmpty())
+		if (!errorMessage.isEmpty())
+			output.putAll(errorMessage);
+		else if (!designPatternVectors.isEmpty() && !codeVectors.isEmpty())
 		{
 			for (Map.Entry<String, int[]> patternEntry : designPatternVectors.entrySet())
 			{
@@ -311,7 +320,8 @@ public class Detector
 				}
 				output.put(patternKey, outputText);
 			}
-		} else if (designPatternVectors.isEmpty())
+		}
+		else if (designPatternVectors.isEmpty())
 			output.put(CDName, "No class found in class diagram.");
 		else if (codeVectors.isEmpty())
 			output.put(javaName, "No class found in java program.");

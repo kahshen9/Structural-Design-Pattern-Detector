@@ -11,6 +11,11 @@ import java.util.regex.Pattern;
 import java.util.List;
 import java.util.Map;
 
+/*
+* 	Input handling for class diagram:
+* 	Read (Identify), Map relations, Compute overall relation matrix, Compute pattern vector;
+* 	Input: class diagram InputStream, Output: pattern vector.
+* */
 public class InputHandling 
 {
     public static ArrayList<Integer[]> classCoordinates;
@@ -25,6 +30,7 @@ public class InputHandling
     public static Map<String, Integer> matrixRootValue = new HashMap<String, Integer>(); 	// Relation type's root value dictionary
     public static int[][] overallMatrix;
     public static int[] designPatternVector;
+	public String errorMessage = "";
 
     public InputHandling() {
         classCoordinates = new ArrayList<Integer[]>();
@@ -146,6 +152,8 @@ public class InputHandling
                         // Map relation coordinates with arrow label
                 		labelledRelationCoordinates.get(label).add(relationCoordinates.get(relationCount)); 
             		}
+					else
+						errorMessage = errorMessage + "Relation arrow not in dictionary, please check your class diagram arrow type.\n";
 
             	}
             	else if (isClass) {
@@ -185,7 +193,7 @@ public class InputHandling
             			catch(NumberFormatException e)
             			{
             				e.printStackTrace();
-            				System.out.println("Additional attributes not a double");
+            				errorMessage = errorMessage + "Additional attributes not a double.\n";
             			}
             			aaList.add(new double[] {x,y});
             		}
@@ -201,7 +209,11 @@ public class InputHandling
             }         
         }
     }
-    
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
     public boolean isInteger(String string) 
     {
         try {
@@ -372,7 +384,7 @@ public class InputHandling
         	}catch (Exception e)
         	{
         		e.printStackTrace();
-        		throw new Exception("Cannot have more than same type of relationship between 2 classes.");
+				errorMessage = errorMessage + "Cannot have more than same type of relationship between 2 classes.\n";
         	}
           }
     	}
@@ -513,15 +525,21 @@ public class InputHandling
     	{
             String key = entry.getKey();
             int[][] values = entry.getValue(); // Relation Matrix
-            int rootValue = matrixRootValue.get(key);
-            
-            for (int row = 0; row < matrixSize; row++) // row index
-            {
-                for (int column = 0; column < matrixSize; column++) // column index
-                {
-                	overallMatrix[row][column] = overallMatrix[row][column] * (int) Math.pow(rootValue, values[row][column]);
-                }
-            }
+
+			if (matrixRootValue.containsKey(key))
+			{
+				int rootValue = matrixRootValue.get(key);
+				for (int row = 0; row < matrixSize; row++) // row index
+				{
+					for (int column = 0; column < matrixSize; column++) // column index
+					{
+						overallMatrix[row][column] = overallMatrix[row][column] * (int) Math.pow(rootValue, values[row][column]);
+					}
+				}
+			}
+			else
+				errorMessage = errorMessage + "Relation root value not found, please check your class diagram relation mapping.\n";
+
         }
     }
     
@@ -637,9 +655,8 @@ public class InputHandling
         System.out.println();
     }
     
-    public int[] readCD(InputStream stream) throws Exception
+    public int[] readCD(InputStream stream, InputHandling handler) throws Exception
     {
-    	InputHandling handler = new InputHandling();
     	int[] vector = null;
     	
     	try {

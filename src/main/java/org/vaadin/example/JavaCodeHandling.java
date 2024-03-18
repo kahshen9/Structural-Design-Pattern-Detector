@@ -1,7 +1,6 @@
 package org.vaadin.example;
 
 
-import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -11,11 +10,15 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.StringTokenizer;
 
+/*
+ * 	Input handling for Java program:
+ * 	Read (Identify), Map relations, Compute overall relation matrix, Compute code vector;
+ * 	Input: java program ArrayList<InputStream>, Output: code vector.
+ * */
 public class JavaCodeHandling 
 {
 	public static ArrayList<String> classesAndInterfaces;
     public static Map<String, List<Integer[]>> mappedRelation;
-    public static Map<String, List<Integer[]>> generalizationMultiplicity;
     public static Map<String, List<String[]>> namedMappedRelation;
     public static Map<String, Integer> matrixRootValue = new HashMap<String, Integer>(); 	// Relation type's root value dictionary
     public static Map<String, int[][]> relationMatrixes;
@@ -26,7 +29,6 @@ public class JavaCodeHandling
     {
     	classesAndInterfaces = new ArrayList<String>();
         mappedRelation = new HashMap<String, List<Integer[]>>();
-        generalizationMultiplicity = new HashMap<String, List<Integer[]>>();
         namedMappedRelation = new HashMap<String, List<String[]>>();
         relationMatrixes = new HashMap<String, int[][]>();
         
