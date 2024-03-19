@@ -64,7 +64,7 @@ public class MainView extends VerticalLayout
         VerticalLayout arrowManual = new VerticalLayout();
 
         Span arrow = new Span("Class Diagram Arrow Manuals");
-        arrow.setId("arrow-manual");
+        arrow.addClassName("arrow-manual");
         StreamResource imageResource = new StreamResource("Arrow manual.png",
                 () -> getClass().getResourceAsStream("/Arrow manual.png"));
         Image image = new Image(imageResource, "Arrow Manual");

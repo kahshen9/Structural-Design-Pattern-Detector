@@ -10,7 +10,7 @@
   max-width: 250px;
 }
 
-#arrow-manual {
+.arrow-manual {
   color: #6A8D6D;
   font-family: "Bookman Old Style", serif;
   font-weight: bolder;
