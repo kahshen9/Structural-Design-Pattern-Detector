@@ -43,6 +43,7 @@ public class InputHandling
         relationMatrixes = new HashMap<String, int[][]>();
         
 		/* Arrow Label Dictionary */
+		relationLabel.put(".", "Comment");
 		relationLabel.put("&lt;-", "Association One-to-One multiplicity");
 		relationLabel.put("&lt;&lt;-", "Generalization One-to-Many multiplicity");
 		relationLabel.put("&lt;&lt;.", "Generalization One-to-Many multiplicity");
@@ -113,7 +114,7 @@ public class InputHandling
             		
             		String label = relationLabel.get(arrow); // Get the arrow label        		
 
-            		if (label != null)
+            		if (label != null && !label.equals("Comment"))
             		{
                 		// Find </panel_attributes>
                 		while (scan.hasNext()&& !line.contains("</panel_attributes>")) 
@@ -152,7 +153,7 @@ public class InputHandling
                         // Map relation coordinates with arrow label
                 		labelledRelationCoordinates.get(label).add(relationCoordinates.get(relationCount)); 
             		}
-					else
+					else if (label == null)
 						errorMessage = errorMessage + "Relation arrow not in dictionary, please check your class diagram arrow type.\n";
 
             	}
