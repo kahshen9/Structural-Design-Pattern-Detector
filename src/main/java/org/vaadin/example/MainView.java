@@ -69,11 +69,14 @@ public class MainView extends VerticalLayout
         arrow.getStyle().set("font-weight", "bolder");
         arrow.getStyle().set("font-size", "x-large");
 
+        Div arrowImg = new Div();
         StreamResource imageResource = new StreamResource("Arrow manual.png",
                 () -> getClass().getResourceAsStream("/Arrow manual.png"));
         Image image = new Image(imageResource, "Arrow Manual");
+        arrowImg.add(image);
+
         arrowManual.add(arrow);
-        arrowManual.add(image);
+        arrowManual.add(arrowImg);
         arrowManual.setJustifyContentMode(JustifyContentMode.CENTER);
         arrowManual.setAlignItems(Alignment.CENTER);
         arrowManual.setWidth("30%");
