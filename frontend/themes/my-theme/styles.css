@@ -10,6 +10,13 @@
   max-width: 250px;
 }
 
+#arrow-manual {
+  color: #6A8D6D;
+  font-family: "Bookman Old Style";
+  font-weight: bolder;
+  font-size: x-large;
+}
+
 body {
   background-color: #FDF8F0;
 }

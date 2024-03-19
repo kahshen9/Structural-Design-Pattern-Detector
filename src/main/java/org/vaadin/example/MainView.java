@@ -48,15 +48,41 @@ public class MainView extends VerticalLayout
 
     public MainView()
     {
+        HorizontalLayout mainView = new HorizontalLayout();
+        VerticalLayout functions = new VerticalLayout();
+
+        functions.setPadding(true);
+        functions.setJustifyContentMode(JustifyContentMode.CENTER);
+        functions.setAlignItems(Alignment.CENTER);
+        functions.setWidth("55%");
+        detector = new Detector();
+
+        functions.add(new H1("Structural Design Pattern Detector"));
+        functions.add(new UploadBar());
+        functions.add(new ButtonBar());
+
+        VerticalLayout arrowManual = new VerticalLayout();
+
+        Span arrow = new Span("Class Diagram Arrow Manuals");
+        arrow.setId("arrow-manual");
+        StreamResource imageResource = new StreamResource("Arrow manual.png",
+                () -> getClass().getResourceAsStream("/Arrow manual.png"));
+        Image image = new Image(imageResource, "Arrow Manual");
+        arrowManual.add(arrow);
+        arrowManual.add(image);
+        arrowManual.setJustifyContentMode(JustifyContentMode.CENTER);
+        arrowManual.setAlignItems(Alignment.CENTER);
+        arrowManual.setWidth("30%");
+
+        mainView.add(arrowManual);
+        mainView.add(functions);
+        mainView.setSizeFull();
+
+        add(mainView);
         setPadding(true);
         setJustifyContentMode(JustifyContentMode.CENTER);
         setAlignItems(Alignment.CENTER);
         setSizeFull();
-        detector = new Detector();
-
-        add(new H1("Structural Design Pattern Detector"));
-        add(new UploadBar());
-        add(new ButtonBar());
     }
 
     class UploadBar extends HorizontalLayout
