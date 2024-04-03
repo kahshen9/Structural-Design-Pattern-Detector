@@ -8,13 +8,21 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.*;
 import java.util.zip.ZipEntry;
-import java.util.zip.ZipException;
 import java.util.zip.ZipFile;
 
 public class Detector
 {
 	public static int offset;
-	
+	public static Map<Integer, String> relationRootValue = new HashMap<>();
+	public static Map<String, Map<int[], ArrayList<String>>> programs;
+
+	public Detector()
+	{
+		programs = new HashMap<>();
+		relationRootValue.put(2, "Association One-to-One multiplicity");
+		relationRootValue.put(3, "Association One-to-Many multiplicity");
+		relationRootValue.put(5, "Generalization One-to-Many multiplicity");
+	}
 	public ArrayList<Double> computeSimilarityScore(int[] designPatternVector, int[] codeVector)
 	{
 		offset = codeVector.length - designPatternVector.length;
@@ -52,8 +60,8 @@ public class Detector
 //	 * */
 //	public String detectMostSimilarPattern(String CDPath, String javaPath) throws Exception 
 //	{
-//		InputHandling CDHanlder = new InputHandling();
-//		Map<String, int[]> designPatternVectors = CDHanlder.readCD(CDPath);
+//		InputHandling CDHandler = new InputHandling();
+//		Map<String, int[]> designPatternVectors = CDHandler.readCD(CDPath);
 //		
 //		// Java handler
 //		JavaCodeHandling javaHandler = new JavaCodeHandling();
@@ -179,7 +187,6 @@ public class Detector
 
 		// Java handling
 		JavaCodeHandling javaHandler = new JavaCodeHandling();
-		Map<String, int[]> codeVectors = new HashMap<String, int[]>();
 		
 		if (javaName.endsWith(".zip")) // zip file
 		{
@@ -197,10 +204,13 @@ public class Detector
 	            ArrayList<InputStream> streams1 = entry.getValue();
 	            ArrayList<InputStream> streams2 = javaZip2.get(key);
 	            ArrayList<InputStream> streams3 = javaZip3.get(key);
-	            int[] vector = javaHandler.readJava(streams1, streams2, streams3);
-	            System.out.println("Java vector: "+ Arrays.toString(vector));
-				if (vector.length != 0)
-	            	codeVectors.put(key, vector);
+				Map<int[], ArrayList<String>> program = javaHandler.readJava(streams1, streams2, streams3);
+				for (int[] vector : program.keySet())
+				{
+					System.out.println("Java vector: " + Arrays.toString(vector));
+					if (vector.length != 0)
+						programs.put(key, program);
+				}
 	        }
 		}
 		else if (javaName.endsWith(".java")) // single java file
@@ -211,9 +221,13 @@ public class Detector
 			streams1.add(new FileInputStream(javaFile));
 			streams2.add(new FileInputStream(javaFile));
 			streams3.add(new FileInputStream(javaFile));
-			int[] vector = javaHandler.readJava(streams1, streams2, streams3);
-			if (vector.length != 0)
-				codeVectors.put(javaName, vector);
+			Map<int[], ArrayList<String>> program = javaHandler.readJava(streams1, streams2, streams3);
+			for (int[] vector : program.keySet())
+			{
+				System.out.println("Java vector: " + Arrays.toString(vector));
+				if (vector.length != 0)
+					programs.put(javaName, program);
+			}
 		}
 		
 		// CD handling
@@ -254,12 +268,14 @@ public class Detector
 		
 		/* Display */
 		System.out.println("Code Vectors: ");
-		for (Map.Entry<String, int[]> entry : codeVectors.entrySet()) 
+
+		for (Map.Entry<String, Map<int[], ArrayList<String>>> entry : programs.entrySet())
 		{
-			String key = entry.getKey();
-			int[] vector = entry.getValue();
-			
-			System.out.println(""+key+": "+ Arrays.toString(vector));
+			String key = entry.getKey(); 		// Program name
+			Map<int[], ArrayList<String>> vectorAndClassNames = entry.getValue();
+
+			for (int[] vector : vectorAndClassNames.keySet())
+				System.out.println(""+key+": "+ Arrays.toString(vector));
 		}	
 		System.out.println();
 		
@@ -278,29 +294,40 @@ public class Detector
 		Map <String, String> output = new HashMap<String, String>();
 		if (!errorMessage.isEmpty())
 			output.putAll(errorMessage);
-		else if (!designPatternVectors.isEmpty() && !codeVectors.isEmpty())
+		else if (!designPatternVectors.isEmpty() && !programs.isEmpty())
 		{
+			Map<String, ArrayList<int[]>> patternMaxSimilarCodeVector = new HashMap<>();
+			Map<String, Map<int[], ArrayList<String>>> patternMaxSimilarCodeClassNames = new HashMap<>();
 			for (Map.Entry<String, int[]> patternEntry : designPatternVectors.entrySet())
 			{
 				double maxSimilarScore = 0.0;
 				int mostSimilarOffset = 0;
-				String mostSimilarCode = "", outputText = "";
+				String mostSimilarCode = "";
+				Map<String, String>	outputText = new HashMap<>();
 				
 				String patternKey = patternEntry.getKey();
 				int[] designPatternVector = patternEntry.getValue();
-	
+				int[] maxSimilarCodeVector = new int []{};
+				int[] maxSimilarCodeOffset = new int []{};
+				Map<int[], ArrayList<String>> maxSimilarCodeClassNames = new HashMap<>();
+
 				System.out.println("Design Pattern Vector: "+patternKey+": "+ Arrays.toString(designPatternVector));
-				for (Map.Entry<String, int[]> codeEntry : codeVectors.entrySet())
+				for (Map.Entry<String, Map<int[], ArrayList<String>>> codeEntry : programs.entrySet())
 				{
-					String codeKey = codeEntry.getKey();
-					int[] codeVector = codeEntry.getValue();
-					
+					String codeKey = codeEntry.getKey(); 		// Program name
+					Map<int[], ArrayList<String>> vectorAndClassNames = codeEntry.getValue();
+
+					int[] codeVector = new int[0];
+					for (int[] vector : vectorAndClassNames.keySet())	// Should only contain 1 vector
+						codeVector = vector;
 					System.out.println("Code Vector: "+codeKey+": "+ Arrays.toString(codeVector));
+
 					ArrayList<Double> similarityScores = computeSimilarityScore(designPatternVector, codeVector);
 					if (similarityScores == null)
-						outputText = "Code: "+codeKey+"\nCode graph smaller than design pattern graph.";
+						outputText.put(codeKey, "Code graph smaller than design pattern graph.");
 					else 
 					{
+						// Find max similarity offset within a program
 						System.out.println("Similarity score for offset (0 - " + offset + "):");
 						for(double score : similarityScores)
 						{
@@ -308,22 +335,39 @@ public class Detector
 						}
 						System.out.println("Maximum similarity score for "+patternKey+" pattern in "+codeKey+" = " + Collections.max(similarityScores)+"; offset: "+similarityScores.indexOf(Collections.max(similarityScores)));
 						System.out.println();
-						
+
+						// Find max similarity program among all programs
 						if (Collections.max(similarityScores) > maxSimilarScore)
 						{
 							maxSimilarScore = Collections.max(similarityScores);
-							mostSimilarOffset = similarityScores.indexOf(Collections.max(similarityScores));
+							mostSimilarOffset = similarityScores.indexOf(maxSimilarScore);
 							mostSimilarCode = codeKey;
-							outputText = "Most similar code: "+mostSimilarCode+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset;
+							outputText.put(codeKey,"Most similar code: "+mostSimilarCode+"\nSimilarity score: " + maxSimilarScore +"\nOffset: "+mostSimilarOffset);
+							maxSimilarCodeVector = codeVector;
+							maxSimilarCodeOffset = new int[] {mostSimilarOffset};
+							maxSimilarCodeClassNames = vectorAndClassNames;
 						}
 					}
 				}
-				output.put(patternKey, outputText);
+				if (mostSimilarCode.isEmpty()) // All code graph's similarityScores == null
+					output.put(patternKey, "Code graph smaller than design pattern graph.");
+				else
+				{
+					patternMaxSimilarCodeVector.putIfAbsent(patternKey, new ArrayList<>());
+					patternMaxSimilarCodeVector.get(patternKey).add(designPatternVector);
+					patternMaxSimilarCodeVector.get(patternKey).add(maxSimilarCodeVector);
+					patternMaxSimilarCodeVector.get(patternKey).add(maxSimilarCodeOffset);
+
+					patternMaxSimilarCodeClassNames.put(patternKey, maxSimilarCodeClassNames);
+					String positionOutput = displayCodeNamedMappedRelation(patternMaxSimilarCodeVector, patternMaxSimilarCodeClassNames);
+					String completeOutput = outputText.get(mostSimilarCode)+"\n"+positionOutput;
+					output.put(patternKey, completeOutput);
+				}
 			}
 		}
 		else if (designPatternVectors.isEmpty())
 			output.put(CDName, "No class found in class diagram.");
-		else if (codeVectors.isEmpty())
+		else if (programs.isEmpty())
 			output.put(javaName, "No class found in java program.");
 
 		String stringOutput = "";
@@ -334,9 +378,144 @@ public class Detector
 				stringOutput = stringOutput + entry.getKey()+"\n\n"+entry.getValue() + "\n\n\n";
 			}
 		}
+
 		return stringOutput;
 	}
-	
+
+	// Back propagation
+	public String displayCodeNamedMappedRelation(Map<String, ArrayList<int[]>> patternMaxSimilarCodeVector, Map<String, Map<int[], ArrayList<String>>> patternMaxSimilarCodeClassNames)
+	{
+		String output = "";
+		// patternMaxSimilarCodeVector = {Key: patternName, Value: [designPatternVector, MostSimilarCodeVector, MostSimilarCodeOffset]}
+		for (Map.Entry<String, ArrayList<int[]>> outputEntry : patternMaxSimilarCodeVector.entrySet())
+		{
+			String pattern = outputEntry.getKey();
+			ArrayList<int[]> mostSimilar = outputEntry.getValue();
+			int patternVectorLength = mostSimilar.get(0).length;
+			int[] codeVector = mostSimilar.get(1);
+			int codeVectorLength = codeVector.length;
+			int offset = mostSimilar.get(2)[0];
+			int matrixSize = (int) Math.sqrt(codeVectorLength);
+			int[][] mostSimilarCodeMatrix = new int[matrixSize][matrixSize];
+
+			// Clean code vector
+			for (int i = 0; i < codeVectorLength; i++)
+			{
+				if (i < offset || i >= (offset + patternVectorLength)) // Clear other values to 1
+					codeVector[i] = 1;
+			}
+			System.out.println(Arrays.toString(codeVector));
+
+			// Construct clean code matrix
+			int vectorIndex = 0;
+			for (int row = 0; row < matrixSize; row++)
+			{
+				for (int column = 0; column < matrixSize; column++)
+				{
+					mostSimilarCodeMatrix[row][column] = codeVector[vectorIndex];
+					vectorIndex++;
+				}
+			}
+			System.out.println("Clean code matrix:");
+			for (int[] row : mostSimilarCodeMatrix)
+			{
+				for (int element : row) {
+					System.out.print(element + " ");
+				}
+				System.out.println(); // Move to the next line after printing each row
+			}
+			System.out.println();
+
+			// Find relations
+			Map<String, List<Integer[]>> mappedRelation = new HashMap<>();
+			for (int row = 0; row < matrixSize; row++)
+			{
+				for (int column = 0; column < matrixSize; column++)
+				{
+					if (mostSimilarCodeMatrix[row][column] != 1) // Have relation
+					{
+						ArrayList<String> relations = new ArrayList<>();
+						// Association 1..1 == 2; Association 1..* == 3; Generalization 1..1 == 5;
+						// possible values: 2, 3, 5, 10, 15;
+						int relationValue = mostSimilarCodeMatrix[row][column];
+						if (relationRootValue.containsKey(relationValue)) 			// Single relation
+							relations.add(relationRootValue.get(relationValue));
+						else	// Multi relations
+						{
+							for (Integer rootValue : relationRootValue.keySet())
+							{
+								if (relationValue % rootValue == 0)		// Consists this relation
+									relations.add(relationRootValue.get(rootValue));
+							}
+						}
+
+						// Map relations to class index
+						for (String relation : relations)
+						{
+							// If the key is not present, create a new list
+							mappedRelation.putIfAbsent(relation, new ArrayList<>());
+							// Map class index to relation label
+							mappedRelation.get(relation).add(new Integer[]{row, column});
+						}
+					}
+				}
+			}
+			System.out.println("Relation mapped to class index:");
+			for (Map.Entry<String, List<Integer[]>> entry : mappedRelation.entrySet()) {
+				String key = entry.getKey();
+				List<Integer[]> values = entry.getValue();
+
+				System.out.println("Key: " + key);
+				for (Integer[] array : values) {
+					System.out.println("  " + Arrays.toString(array));
+				}
+			}
+			System.out.println();
+
+			// Get mappedRelation's class names (sync through patternName, 1 pattern should only have 1 most similar code)
+			// patternMaxSimilarCodeVector = {Key: patternName, Value: [designPatternVector, MostSimilarCodeVector, MostSimilarCodeOffset]}
+			// patternMaxSimilarCodeClassNames = {Key: patternName, Value: {Key: MostSimilarCodeVector, Values: MostSimilarCodeClassNames}}
+			Map<int[], ArrayList<String>> vectorAndClassNames = patternMaxSimilarCodeClassNames.get(pattern);
+			ArrayList<String> classNames = null;
+			for (Map.Entry<int[], ArrayList<String>> vectorAndClassNamesEntry : vectorAndClassNames.entrySet())
+				classNames = vectorAndClassNamesEntry.getValue();
+
+			Map<String, List<String[]>>  namedMappedRelation = new HashMap<>();
+			for (Map.Entry<String, List<Integer[]>> mappedRelationEntry : mappedRelation.entrySet())
+			{
+				String relationName = mappedRelationEntry.getKey();
+				List<Integer[]> classPairs = mappedRelationEntry.getValue();
+
+				for (Integer[] classPair : classPairs)		// 1 class pair = 1 relationship
+				{
+					String startClassName = classNames.get(classPair[0]);
+					String endClassName = classNames.get(classPair[1]);
+
+					namedMappedRelation.putIfAbsent(relationName, new ArrayList<>());
+					namedMappedRelation.get(relationName).add(new String[] {startClassName, endClassName});
+				}
+			}
+
+			// Display namedMappedRelation
+			System.out.println("Pattern: "+pattern);
+			output = "Position: ";
+			for (Map.Entry<String, List<String[]>> namedMappedRelationEntry : namedMappedRelation.entrySet())
+			{
+				String relationName = namedMappedRelationEntry.getKey();
+				List<String[]> relationClasses = namedMappedRelationEntry.getValue();
+
+				System.out.println("Key: " + relationName);
+				output = output + "\n" + relationName;
+				for (String[] array : relationClasses) {
+					System.out.println("  " + Arrays.toString(array));
+					output = output + "\n" + Arrays.toString(array);
+				}
+				output = output + "\n";
+			}
+			System.out.println();
+		}
+		return output;
+	}
 //	public static void main(String[] args) throws Exception
 //	{
 //		/* Display */

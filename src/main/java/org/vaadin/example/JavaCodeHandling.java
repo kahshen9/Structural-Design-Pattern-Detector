@@ -115,7 +115,7 @@ public class JavaCodeHandling
         			
     				// If the key is not present, create a new list
         			mappedRelation.putIfAbsent("Generalization One-to-Many multiplicity", new ArrayList<>());
-                    // Map class names to relation label
+                    // Map class index to relation label
         			mappedRelation.get("Generalization One-to-Many multiplicity").add(new Integer[]{childClassIndex, parentClassIndex});
         		}
         		
@@ -207,14 +207,24 @@ public class JavaCodeHandling
 						// skip empty line (fast forward to '{')
 						while (scan.hasNext()) 
 				        {
-				            line = scan.nextLine().trim();
-				            processedLine = line.replaceAll("\"(?:\\\\\"|[^\"])*\"|(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)","");
-				            if (processedLine.contains("{"))
-				            {
-			        			bracketCount++;
-			        			classCount++;
-				            	break;
-				            }
+							line = scan.nextLine().trim();
+							processedLine = line.replaceAll("\"(?:\\\\\"|[^\"])*\"|(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)","");
+							st1 = new StringTokenizer(processedLine, " \t");
+							tokens = new ArrayList<String>();
+
+							while (st1.hasMoreTokens())
+								tokens.add(st1.nextToken());
+
+							if (processedLine.contains("{"))
+							{
+								bracketCount++;
+								classCount++;
+
+								System.out.println("Class scope: ");
+								if (tokens.indexOf("{") != tokens.size()-1)  // variable declaration same line as class's "{"
+									variableCheck(currentClasses, classCount, processedLine, tokens);
+								break;
+							}
 				        }
 					}
 					
@@ -265,80 +275,84 @@ public class JavaCodeHandling
 			    }
 			    else if (bracketCount == classCount && classCount > 0) // Variables check: (Within class scope)
 			    {
-			    	System.out.println("Class scope: ");
-			        // Check if line contains other class names
-			    	for (String name : classesAndInterfaces)
-			    	{
-			    		// line contains other class name
-			    		if (!name.equals(currentClasses.get(classCount-1)) && processedLine.contains(name))
-						{
-			    			System.out.println("Other class name: "+name);
-			    			
-			    			int otherClassIndex = classesAndInterfaces.indexOf(name);
-			    			String currentClassName = currentClasses.get(classCount-1);
-			    			int currentClassIndex = classesAndInterfaces.indexOf(currentClassName);
-			    			System.out.println("Current class name: "+currentClassName);
-			    			String label = null;
-			    			
-			    			// Check variable type (association's multiplicity)                		
-			        		boolean isList = false, found = false;
-			        		for (int i = 0; i < tokens.size(); i++) 
-			        		{
-			        			String word = tokens.get(i);
-			        			System.out.println("List check: "+word);
-			        			//IPhone != IPhone4sCharger, IPhone4sCharger[< == IPhone4sCharger
-			        		    if (word.matches(".*[\\[\\]<>].*") && word.contains(name)) // Matches == List == 1..*
-			        		    {
-			        		    	// List<className> check
-			        		    	String[] clean = word.replaceAll("[\\[\\]<>]", " ").split(" ");
-			        		    	for (String cleanWord : clean)
-			        		    	{
-			        		    		if (name.equals(cleanWord))
-			        		    		{
-			        		    			isList = true;
-			        		    			found = true;
-			        		    			break;
-			        		    		}
-			        		    	}                		    	
-			        		    }
-			        		    else if (word.equals(name)) 
-			        		    {
-			        		    	found = true;
-			        		    	
-			        		    	if (i + 1 < tokens.size() && i > 0)
-			        		    	{
-				        		    	if (tokens.get(i+1).matches(".*[\\[\\]<>].*") || tokens.get(i-1).matches(".*[\\[\\]<>].*")) // className []
-				        		    	{
-				        		    		isList = true;
-				        		    		break;
-				        		    	}
-				        		    	else if (tokens.get(i+1).matches("[;=]+")) // className = / className ; --> variable name != variable type
-				        		    		found = false;
-			        		    	}
-			        		    }
-			        		}
-
-			        		if (found && !isList) // 1..1
-			        			label = "Association One-to-One multiplicity";
-			        		else if (found)// isList, 1..*
-			        			label = "Association One-to-Many multiplicity";
-
-			        		System.out.println("Label: "+label);
-			        		if (label != null)
-			        		{
-			        			// If the key is not present, create a new list
-			        			mappedRelation.putIfAbsent(label, new ArrayList<>());
-			                    // Map class names to relation label
-			        			mappedRelation.get(label).add(new Integer[]{otherClassIndex, currentClassIndex}); 
-			        		}
-						}            		
-			    	}
+					System.out.println("Class scope: ");
+					variableCheck(currentClasses, classCount, processedLine, tokens);
 			    }
 			}
 		}
         System.out.println("\n\n");
 	}
-	
+
+	private void variableCheck(ArrayList<String> currentClasses, int classCount, String processedLine, ArrayList<String> tokens)
+	{
+		// Check if line contains other class names
+		for (String name : classesAndInterfaces)
+		{
+			// line contains other class name
+			if (!name.equals(currentClasses.get(classCount-1)) && processedLine.contains(name))
+			{
+				System.out.println("Other class name: "+name);
+				int otherClassIndex = classesAndInterfaces.indexOf(name);
+				String currentClassName = currentClasses.get(classCount-1);
+				int currentClassIndex = classesAndInterfaces.indexOf(currentClassName);
+				System.out.println("Current class name: "+currentClassName);
+				String label = null;
+
+				// Check variable type (association's multiplicity)
+				boolean isList = false, found = false;
+				for (int i = 0; i < tokens.size(); i++)
+				{
+					String word = tokens.get(i);
+					System.out.println("List check: "+word);
+					//IPhone != IPhone4sCharger, IPhone4sCharger[< == IPhone4sCharger
+					if (word.matches(".*[\\[\\]<>].*") && word.contains(name)) // Matches == List == 1..*
+					{
+						// List<className> check
+						String[] clean = word.replaceAll("[\\[\\]<>]", " ").split(" ");
+						for (String cleanWord : clean)
+						{
+							if (name.equals(cleanWord))
+							{
+								isList = true;
+								found = true;
+								break;
+							}
+						}
+					}
+					else if (word.equals(name))
+					{
+						found = true;
+
+						if (i + 1 < tokens.size() && i > 0)
+						{
+							if (tokens.get(i+1).matches(".*[\\[\\]<>].*") || tokens.get(i-1).matches(".*[\\[\\]<>].*")) // className []
+							{
+								isList = true;
+								break;
+							}
+							else if (tokens.get(i+1).matches("[;=]+")) // className = / className ; --> variable name != variable type
+								found = false;
+						}
+					}
+				}
+
+				if (found && !isList) // 1..1
+					label = "Association One-to-One multiplicity";
+				else if (found)// isList, 1..*
+					label = "Association One-to-Many multiplicity";
+
+				System.out.println("Label: "+label);
+				if (label != null)
+				{
+					// If the key is not present, create a new list
+					mappedRelation.putIfAbsent(label, new ArrayList<>());
+					// Map class names to relation label
+					mappedRelation.get(label).add(new Integer[]{otherClassIndex, currentClassIndex});
+				}
+			}
+		}
+	}
+
 	/*
 	 * Run after identifyGeneralization & identifyAssociation (ArrayList<String> classesAndInterfaces, File file).
 	 * Backward mapping relation to classes through mappedRelation.
@@ -525,14 +539,14 @@ public class JavaCodeHandling
 	/*
 	 * Input handling
 	 * */
-	public int[] readJava(ArrayList<InputStream> streams1, ArrayList<InputStream> streams2, ArrayList<InputStream> streams3) throws Exception
+	public Map<int[], ArrayList<String>> readJava(ArrayList<InputStream> streams1, ArrayList<InputStream> streams2, ArrayList<InputStream> streams3) throws Exception
 	{
 		JavaCodeHandling handler = new JavaCodeHandling();
 		int[] vector;
 		
 		if (streams1 != null && streams2 != null && streams3 != null)
 		{
-			if (streams1.size() > 1)
+			if (streams1.size() > 1) // More than 1 java file
 			{
 				// Identify class & interface
 				for (InputStream stream : streams1) // 1 stream == 1 file
@@ -562,8 +576,11 @@ public class JavaCodeHandling
 		handler.classNameMapping(classesAndInterfaces, mappedRelation, namedMappedRelation);
 		handler.constructOverallRelationMatrix();
 		vector = handler.getCodeVector();
-		handler.display(vector);		
-		return vector;
+		handler.display(vector);
+
+		Map<int[], ArrayList<String>> vectorAndClassNames = new HashMap<>();
+		vectorAndClassNames.put(vector, classesAndInterfaces);
+		return vectorAndClassNames;
 	}
 	
 	/*

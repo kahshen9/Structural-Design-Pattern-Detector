@@ -55,7 +55,6 @@ public class MainView extends VerticalLayout
         functions.setJustifyContentMode(JustifyContentMode.CENTER);
         functions.setAlignItems(Alignment.CENTER);
         functions.setWidth("55%");
-        detector = new Detector();
 
         functions.add(new H1("Structural Design Pattern Detector"));
         functions.add(new UploadBar());
@@ -240,6 +239,7 @@ public class MainView extends VerticalLayout
                 if (cdFile != null && javaFile != null)
                 {
                     try {
+                        detector = new Detector();
                         detectionResult = detector.detectMostSimilarCode (cdFile, cdFileName, javaFile, javaFileName);
 
                         // Remove previous download link if exists

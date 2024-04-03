@@ -385,7 +385,7 @@ public class InputHandling
         	}catch (Exception e)
         	{
         		e.printStackTrace();
-				errorMessage = errorMessage + "Cannot have more than same type of relationship between 2 classes.\n";
+				errorMessage = errorMessage + "Cannot have more than 1 same type of relationship between 2 classes.\n";
         	}
           }
     	}
@@ -414,7 +414,7 @@ public class InputHandling
                 namedMappedRelation.putIfAbsent(key, new ArrayList<>());
                 // Map class names to relation label
                 if (startClass != null && endClass != null)
-                namedMappedRelation.get(key).add(new String[]{startClass, endClass});
+                	namedMappedRelation.get(key).add(new String[]{startClass, endClass});
             }
         }
     }
@@ -674,7 +674,10 @@ public class InputHandling
 	    
 		return vector;
     }
-    
+
+	public Map<String, List<String[]>> getNamedMappedRelation() {
+		return namedMappedRelation;
+	}
 //	public static void main(String[] args) throws Exception 
 //	{
 //		/* System workflow */
