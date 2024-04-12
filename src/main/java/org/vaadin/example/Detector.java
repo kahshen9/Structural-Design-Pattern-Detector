@@ -19,9 +19,9 @@ public class Detector
 	public Detector()
 	{
 		programs = new HashMap<>();
-		relationRootValue.put(2, "Association One-to-One multiplicity");
-		relationRootValue.put(3, "Association One-to-Many multiplicity");
-		relationRootValue.put(5, "Generalization One-to-Many multiplicity");
+		relationRootValue.put(2, "Association One-to-One Multiplicity");
+		relationRootValue.put(3, "Association One-to-Many Multiplicity");
+		relationRootValue.put(5, "Generalization One-to-Many Multiplicity");
 	}
 	public ArrayList<Double> computeSimilarityScore(int[] designPatternVector, int[] codeVector)
 	{
@@ -382,7 +382,7 @@ public class Detector
 		return stringOutput;
 	}
 
-	// Back propagation
+	// Back propagation - display selected code's relation mapping (position)
 	public String displayCodeNamedMappedRelation(Map<String, ArrayList<int[]>> patternMaxSimilarCodeVector, Map<String, Map<int[], ArrayList<String>>> patternMaxSimilarCodeClassNames)
 	{
 		String output = "";

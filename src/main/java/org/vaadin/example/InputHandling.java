@@ -44,16 +44,16 @@ public class InputHandling
         
 		/* Arrow Label Dictionary */
 		relationLabel.put(".", "Comment");
-		relationLabel.put("&lt;-", "Association One-to-One multiplicity");
-		relationLabel.put("&lt;&lt;-", "Generalization One-to-Many multiplicity");
-		relationLabel.put("&lt;&lt;.", "Generalization One-to-Many multiplicity");
-		relationLabel.put("&lt;&lt;&lt;&lt;-", "Association One-to-One multiplicity");
-		relationLabel.put("&lt;&lt;&lt;&lt;&lt;-", "Association One-to-One multiplicity");
+		relationLabel.put("&lt;-", "Association One-to-One Multiplicity");
+		relationLabel.put("&lt;&lt;-", "Generalization One-to-Many Multiplicity");
+		relationLabel.put("&lt;&lt;.", "Generalization One-to-Many Multiplicity");
+		relationLabel.put("&lt;&lt;&lt;&lt;-", "Association One-to-One Multiplicity");
+		relationLabel.put("&lt;&lt;&lt;&lt;&lt;-", "Association One-to-One Multiplicity");
 		
 		/* Relation Matrix Root Value Dictionary */
-		matrixRootValue.put("Association One-to-One multiplicity", 2);
-		matrixRootValue.put("Association One-to-Many multiplicity", 3);
-		matrixRootValue.put("Generalization One-to-Many multiplicity", 5);
+		matrixRootValue.put("Association One-to-One Multiplicity", 2);
+		matrixRootValue.put("Association One-to-Many Multiplicity", 3);
+		matrixRootValue.put("Generalization One-to-Many Multiplicity", 5);
     }
     
     public void parseFile(InputStream streams) throws Exception 
@@ -129,9 +129,9 @@ public class InputHandling
                         			m1 = line.substring(line.indexOf('=')+1);
                             	
                         		if (isInteger(m1))
-                        			label = label+";m1One-to-One multiplicity";
+                        			label = label+";m1One-to-One Multiplicity";
                         		else
-                        			label = label+";m1One-to-Many multiplicity";
+                        			label = label+";m1One-to-Many Multiplicity";
                             }
                             else if (line.startsWith("m2"))
                             {
@@ -142,9 +142,9 @@ public class InputHandling
                         			m2 = line.substring(line.indexOf('=')+1);
                             	
                         		if (isInteger(m2))
-                        			label = label+";m2One-to-One multiplicity";
+                        			label = label+";m2One-to-One Multiplicity";
                         		else
-                        			label = label+";m2One-to-Many multiplicity";
+                        			label = label+";m2One-to-Many Multiplicity";
                             }
                 		}
                 		
@@ -279,9 +279,9 @@ public class InputHandling
             	
         		// If the key is not present, create a new list
         		newLabelledRelationCoordinates.putIfAbsent(forwardLabel, new ArrayList<>());
-        		newLabelledRelationCoordinates.putIfAbsent(backwardLabel, new ArrayList<>());
         		newLabelledRelationCoordinates.get(forwardLabel).add(coordinate);
-        		newLabelledRelationCoordinates.get(backwardLabel).add(backwardCoordinate);
+//				newLabelledRelationCoordinates.putIfAbsent(backwardLabel, new ArrayList<>());
+//        		newLabelledRelationCoordinates.get(backwardLabel).add(backwardCoordinate);
             }
         }
     	return newLabelledRelationCoordinates;
@@ -329,10 +329,10 @@ public class InputHandling
     				String searchKey = null;
     				if (key.startsWith("Generalization"))
     					searchKey = key;
-    				else if (key.equals("Association One-to-One multiplicity"))
-    					searchKey = "Association One-to-Many multiplicity";
-    				else if (key.equals("Association One-to-Many multiplicity"))
-    					searchKey = "Association One-to-One multiplicity";
+    				else if (key.equals("Association One-to-One Multiplicity"))
+    					searchKey = "Association One-to-Many Multiplicity";
+    				else if (key.equals("Association One-to-Many Multiplicity"))
+    					searchKey = "Association One-to-One Multiplicity";
     				
     				if (mappedRelation.get(searchKey) != null) // Search key exists, check existing match in its values
     				{

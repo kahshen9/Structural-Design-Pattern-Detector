@@ -33,9 +33,9 @@ public class JavaCodeHandling
         relationMatrixes = new HashMap<String, int[][]>();
         
 		/* Relation Matrix Root Value Dictionary */
-		matrixRootValue.put("Association One-to-One multiplicity", 2);
-		matrixRootValue.put("Association One-to-Many multiplicity", 3);
-		matrixRootValue.put("Generalization One-to-Many multiplicity", 5);
+		matrixRootValue.put("Association One-to-One Multiplicity", 2);
+		matrixRootValue.put("Association One-to-Many Multiplicity", 3);
+		matrixRootValue.put("Generalization One-to-Many Multiplicity", 5);
     }
     
 	/*
@@ -77,7 +77,6 @@ public class JavaCodeHandling
 	 * */
 	public void identifyGeneralization(ArrayList<String> classesAndInterfaces, InputStream inputStream)
 	{
-		System.out.println("Generalization");
 		Scanner scan = new Scanner(inputStream);
         while (scan.hasNext()) 
         {
@@ -85,7 +84,6 @@ public class JavaCodeHandling
             String processedLine = line.replaceAll("\"(?:\\\\\"|[^\"])*\"|(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)",""); // Remove comments and texts in " "
             if (processedLine.contains("extends") || processedLine.contains("implements")) 
             {
-            	System.out.println("Generalization");
             	ArrayList<String> tokens = new ArrayList<String>();
             	
         		StringTokenizer st1 = new StringTokenizer(processedLine, " ");
@@ -96,27 +94,18 @@ public class JavaCodeHandling
         				tokens.add(token); 
         		}
         		
-        		for (String token : tokens)
-        			System.out.println("Token: " + token);
-        		
         		int extendIndex = tokens.indexOf("extends");
         		int implementIndex = tokens.indexOf("implements");
-        		System.out.println("Extends index: "+extendIndex);
         		
         		if (extendIndex != -1)
         		{
-        			System.out.println("Parent class: "+tokens.get(extendIndex + 1));
-        			System.out.println("Shape index: "+classesAndInterfaces.indexOf("Shape"));
         			int parentClassIndex = classesAndInterfaces.indexOf(tokens.get(extendIndex + 1));
         			int childClassIndex = classesAndInterfaces.indexOf(tokens.get(extendIndex - 1));
         			
-        			System.out.println("Parent index: "+parentClassIndex);
-        			System.out.println("Child index: "+childClassIndex);
-        			
     				// If the key is not present, create a new list
-        			mappedRelation.putIfAbsent("Generalization One-to-Many multiplicity", new ArrayList<>());
+        			mappedRelation.putIfAbsent("Generalization One-to-Many Multiplicity", new ArrayList<>());
                     // Map class index to relation label
-        			mappedRelation.get("Generalization One-to-Many multiplicity").add(new Integer[]{childClassIndex, parentClassIndex});
+        			mappedRelation.get("Generalization One-to-Many Multiplicity").add(new Integer[]{childClassIndex, parentClassIndex});
         		}
         		
         		if (implementIndex != -1)
@@ -129,9 +118,9 @@ public class JavaCodeHandling
             			int parentClassIndex = classesAndInterfaces.indexOf(tokens.get(i));
             			
         				// If the key is not present, create a new list
-            			mappedRelation.putIfAbsent("Generalization One-to-Many multiplicity", new ArrayList<>());
+            			mappedRelation.putIfAbsent("Generalization One-to-Many Multiplicity", new ArrayList<>());
                         // Map class names to relation label
-            			mappedRelation.get("Generalization One-to-Many multiplicity").add(new Integer[]{childClassIndex, parentClassIndex});
+            			mappedRelation.get("Generalization One-to-Many Multiplicity").add(new Integer[]{childClassIndex, parentClassIndex});
         			}
         		}
             }
@@ -155,8 +144,7 @@ public class JavaCodeHandling
 			{
 				String line = scan.nextLine().trim();
 			    String processedLine = line.replaceAll("\"(?:\\\\\"|[^\"])*\"|(?:/\\*(?:[^*]|(?:\\*+[^*/]))*\\*+/)|(?://.*)",""); // Remove comments and texts in " "
-			    
-			    System.out.println("ProcessedLine: "+processedLine);
+
 				ArrayList<String> tokens = new ArrayList<String>();
 				StringTokenizer st1 = new StringTokenizer(processedLine, " \t");
 				while (st1.hasMoreTokens())
@@ -164,7 +152,6 @@ public class JavaCodeHandling
 			    
 			    if (processedLine.contains("class") || processedLine.contains("interface")) 
 			    {
-			    	System.out.println("Class");
 					int classIndex = tokens.indexOf("class");
 					int interfaceIndex = tokens.indexOf("interface");
 					
@@ -179,7 +166,6 @@ public class JavaCodeHandling
 						if (name != null) 
 						{
 							name = name.replace("{", "");
-							System.out.println("Current class: "+name);
 			    			for (String actualName : classesAndInterfaces)
 			    			{
 			    				if (name.equals(actualName))
@@ -198,7 +184,6 @@ public class JavaCodeHandling
 
 					if (processedLine.contains("{")) // same row as 'class' / 'interface'
 					{
-						System.out.println("Class same line {");
 						bracketCount++;
 						classCount++;
 					}
@@ -220,7 +205,6 @@ public class JavaCodeHandling
 								bracketCount++;
 								classCount++;
 
-								System.out.println("Class scope: ");
 								if (tokens.indexOf("{") != tokens.size()-1)  // variable declaration same line as class's "{"
 									variableCheck(currentClasses, classCount, processedLine, tokens);
 								break;
@@ -230,7 +214,6 @@ public class JavaCodeHandling
 					
 					if (bracketCount == classCount && processedLine.contains("}")) // same row as 'class' / 'interface'
 			        {
-			        	System.out.println("Class end same line }");
 			        	bracketCount--;
 			        	currentClasses.remove(classCount-1);
 			        	classCount--;
@@ -241,7 +224,6 @@ public class JavaCodeHandling
 			    	continue;
 			    else if (processedLine.contains("{")) // '{' within the class (for method, if else, try catch etc)
 			    {
-			    	System.out.println("Method same line {");
 			    	bracketCount++;
 			    	if (processedLine.contains("}")) // '{}' in the same line
 			        {
@@ -263,24 +245,20 @@ public class JavaCodeHandling
 				            if (bracketCount == classCount) // Method's "}" found, back in class scope
 				            	break;
 				        }
-						System.out.println("Method diff line end }");
 			    	}
 			    }
 			    else if (bracketCount == classCount && processedLine.contains("}")) // End of class
 			    {
-			    	System.out.println("Class end }");
 			    	bracketCount--;
 			    	currentClasses.remove(classCount-1);
 			    	classCount--;
 			    }
 			    else if (bracketCount == classCount && classCount > 0) // Variables check: (Within class scope)
 			    {
-					System.out.println("Class scope: ");
 					variableCheck(currentClasses, classCount, processedLine, tokens);
 			    }
 			}
 		}
-        System.out.println("\n\n");
 	}
 
 	private void variableCheck(ArrayList<String> currentClasses, int classCount, String processedLine, ArrayList<String> tokens)
@@ -291,11 +269,9 @@ public class JavaCodeHandling
 			// line contains other class name
 			if (!name.equals(currentClasses.get(classCount-1)) && processedLine.contains(name))
 			{
-				System.out.println("Other class name: "+name);
 				int otherClassIndex = classesAndInterfaces.indexOf(name);
 				String currentClassName = currentClasses.get(classCount-1);
 				int currentClassIndex = classesAndInterfaces.indexOf(currentClassName);
-				System.out.println("Current class name: "+currentClassName);
 				String label = null;
 
 				// Check variable type (association's multiplicity)
@@ -303,7 +279,6 @@ public class JavaCodeHandling
 				for (int i = 0; i < tokens.size(); i++)
 				{
 					String word = tokens.get(i);
-					System.out.println("List check: "+word);
 					//IPhone != IPhone4sCharger, IPhone4sCharger[< == IPhone4sCharger
 					if (word.matches(".*[\\[\\]<>].*") && word.contains(name)) // Matches == List == 1..*
 					{
@@ -337,11 +312,10 @@ public class JavaCodeHandling
 				}
 
 				if (found && !isList) // 1..1
-					label = "Association One-to-One multiplicity";
+					label = "Association One-to-One Multiplicity";
 				else if (found)// isList, 1..*
-					label = "Association One-to-Many multiplicity";
+					label = "Association One-to-Many Multiplicity";
 
-				System.out.println("Label: "+label);
 				if (label != null)
 				{
 					// If the key is not present, create a new list
@@ -389,9 +363,9 @@ public class JavaCodeHandling
                 	}
                 	
                 	if (occurenceCount > 1)
-            			label = "Association One-to-Many multiplicity";
+            			label = "Association One-to-Many Multiplicity";
             		else 
-            			label = "Association One-to-One multiplicity";
+            			label = "Association One-to-One Multiplicity";
                 	
         			// If the key is not present, create a new list
                 	toAdd.putIfAbsent(label, new ArrayList<>());
@@ -410,26 +384,6 @@ public class JavaCodeHandling
             	mappedRelation.putIfAbsent(key, new ArrayList<>());
             	mappedRelation.get(key).add(coordinate);
             }          
-		}
-		
-		// Debug - printing
-		System.out.println("\nClasses and Interfaces:");
-		for (String name : classesAndInterfaces) 
-		{
-			System.out.println(name);
-		}
-		System.out.println();
-		
-		System.out.println("Mapped relation:");
-		for (Map.Entry<String, List<Integer[]>> entry : mappedRelation.entrySet())
-		{
-			String key = entry.getKey();
-            List<Integer[]> values = entry.getValue();
-            
-            System.out.println("Key: " + key);
-            for (Integer[] coordinate : values)
-            	System.out.println("  " + Arrays.toString(coordinate));
-            System.out.println();
 		}
 	}
 	
@@ -572,7 +526,7 @@ public class JavaCodeHandling
 		else 
 			throw new Exception("InputStream is null.");
 
-		handler.relationBackwardMapping(mappedRelation);
+		//handler.relationBackwardMapping(mappedRelation);
 		handler.classNameMapping(classesAndInterfaces, mappedRelation, namedMappedRelation);
 		handler.constructOverallRelationMatrix();
 		vector = handler.getCodeVector();
