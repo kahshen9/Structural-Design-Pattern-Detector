@@ -247,7 +247,7 @@ public class InputHandling
             for (Integer[] coordinate : values) 
             {
             	List<double[]> add_attr = relationAdditionalAttribute.get(coordinate);
-            	
+            	boolean m2 = false;
             	// add_attr.get(1) = start point, add_attr.get(0) = end point
         		int x = coordinate[0], y = coordinate[1];
             	Integer startX = (int) (x+add_attr.get(1)[0]), startY = (int) (y+add_attr.get(1)[1]);
@@ -270,8 +270,10 @@ public class InputHandling
             		for (int i = 1; i < relations.length; i++)
                 	{
             			
-                    	if (relations[i].contains("m2")) 
-                    		backwardLabel = "Association " + relations[i].substring(relations[i].indexOf("2")+1);
+                    	if (relations[i].contains("m2")) {
+							backwardLabel = "Association " + relations[i].substring(relations[i].indexOf("2") + 1);
+							m2 = true;
+						}
                     	else
                     		forwardLabel = "Association " + relations[i].substring(relations[i].indexOf("1")+1);
                 	}
@@ -280,8 +282,11 @@ public class InputHandling
         		// If the key is not present, create a new list
         		newLabelledRelationCoordinates.putIfAbsent(forwardLabel, new ArrayList<>());
         		newLabelledRelationCoordinates.get(forwardLabel).add(coordinate);
-//				newLabelledRelationCoordinates.putIfAbsent(backwardLabel, new ArrayList<>());
-//        		newLabelledRelationCoordinates.get(backwardLabel).add(backwardCoordinate);
+				if (m2)
+				{
+					newLabelledRelationCoordinates.putIfAbsent(backwardLabel, new ArrayList<>());
+        			newLabelledRelationCoordinates.get(backwardLabel).add(backwardCoordinate);
+				}
             }
         }
     	return newLabelledRelationCoordinates;

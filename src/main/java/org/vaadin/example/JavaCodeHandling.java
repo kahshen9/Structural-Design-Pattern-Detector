@@ -321,7 +321,7 @@ public class JavaCodeHandling
 					// If the key is not present, create a new list
 					mappedRelation.putIfAbsent(label, new ArrayList<>());
 					// Map class names to relation label
-					mappedRelation.get(label).add(new Integer[]{otherClassIndex, currentClassIndex});
+					mappedRelation.get(label).add(new Integer[]{currentClassIndex, otherClassIndex});
 				}
 			}
 		}
